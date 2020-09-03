@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if [ -z $1 ]; then
+	echo "Enter the list number and N/P"
+else
+	X=$(echo $1 | tr -dc 0-9)
+	cp ~/Projects/.metadata/current/$X/$1-sol.pdf ~
+fi

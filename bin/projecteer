@@ -1,0 +1,226 @@
+#!/usr/bin/env python
+
+import sys
+from subprocess import PIPE
+from subprocess import Popen as proc
+from os import path, listdir
+import yaml
+
+def main():
+    if len(sys.argv) == 1:
+        usage()
+        return
+
+    if len(sys.argv) == 2:
+        command = "list-projects"
+    else:
+        command = sys.argv[2]
+
+    try:
+        globals()[command.replace("-", "_")]()
+    except KeyError:
+        print("Unknown command: " + command)
+        usage()
+
+def load_dir(name):
+    if not path.isfile(name + "/info.yaml"):
+        return False
+    with open(name + "/info.yaml") as yamlfile:
+        dmap = yaml.safe_load(yamlfile)
+        if not dmap["recurse"]:
+            return [name, dmap["title"]]
+
+        arr = []
+        for proj_dir in listdir(name):
+            dir_data = load_dir(name + "/" + proj_dir)
+            if dir_data:
+                arr.append(dir_data)
+        return [name, dmap["title"], arr]
+    return False
+
+def build_map_recursive(dirs, arr):
+    if dirs[1] in arr:
+        print("ERROR: " + dirs[1] + " DUPLICATE")
+        sys.exit(1)
+    arr[dirs[1]] = dirs[0]
+    if len(dirs) == 3:
+        for i in dirs[2]:
+            build_map_recursive(i, arr)
+
+def build_map(name):
+    dirs = load_dir(name)
+    arr = {}
+    build_map_recursive(dirs, arr)
+    return arr
+
+def list_projects_recursive(dirs, depth):
+    if len(dirs) == 2:
+        return "|  " * (depth - 1) + "-  " + dirs[1] + "\n"
+    string = "|  " * depth + dirs[1] + ":\n"
+    for i in sorted(dirs[2], key=lambda x: "0" * len(x) + x[1]):
+        string += list_projects_recursive(i, depth + 1)
+    return string
+
+def list_projects():
+    if len(sys.argv) == 3:
+        dir_data = load_dir(sys.argv[1])
+        print(list_projects_recursive(dir_data, 0))
+    elif sys.argv[3]:
+        name = " ".join(sys.argv[3:]).strip().replace("|  ", "").replace("-  ", "")
+        paths = build_map(sys.argv[1])
+        if name[-1:] == ":":
+            create = True
+            name = name[:-1]
+        else:
+            create = False
+        if name in paths:
+            pathstr = paths[name]
+            if not create:
+                fpath = path.expanduser(sys.argv[1])
+                newpath = fpath + '/.metadata/current'
+                if path.islink(newpath):
+                    proc(['rm', newpath]).wait()
+                proc(['ln', '-s', pathstr, newpath]).wait()
+
+                string = ""
+                for i in get_paths():
+                    string += "set rtp+=" + i + "\n" + "try\n" + "\tsource " + i + "/init.vim\n" + \
+                              "catch " + "/^Vim\\%((\\a\\+)\\)\\=:E484/" + "\n" + "endtry\n"
+                with open(fpath + "/.metadata/append.vim", "w") as vimfile:
+                    vimfile.write(string)
+
+                action = False # get_main_action()
+                if action:
+                    actions = get_actions()
+                    if actions:
+                        newpath = path.expanduser(sys.argv[1] + '/.metadata/actions/' +
+                                                  actions[action]).split(" ")
+                        newpath.append(sys.argv[1])
+                        proc(newpath)
+
+            else:
+                proc(['killall', 'rofi']).wait()
+                projpath = sys.argv[0].split("/")[-1]
+                proc(['rofi', '-modi',
+                      name + ':' + projpath + ' ' + sys.argv[1] + ' new-project ' + pathstr,
+                      '-show', name])
+
+def get_paths(spath=None):
+    if spath is None:
+        spath = sys.argv[1] + "/.metadata/current"
+    newpath = path.expanduser(spath)
+    newpath = proc(['realpath', newpath], stdout=PIPE).stdout.readline()
+    newpath = newpath.decode('utf8').strip().split('/')
+    paths = []
+    while True:
+        temppath = "/".join(newpath)
+        if path.isfile(temppath + "/info.yaml"):
+            paths.append(temppath)
+        else:
+            break
+        newpath = newpath[:-1]
+    return paths
+
+def recursive_merge(data1, data2):
+    for key in data2:
+        if key not in data1:
+            data1[key] = data2[key]
+        elif isinstance(data2[key], dict) and isinstance(data1[key], dict):
+            recursive_merge(data1[key], data2[key])
+
+def generate_config():
+    all_paths = build_map(sys.argv[1])
+    if sys.argv[3] not in all_paths:
+        return
+    paths = get_paths(all_paths[sys.argv[3]])
+    data = {}
+    for j in paths:
+        with open(j + "/info.yaml") as yamlfile:
+            dmap = yaml.safe_load(yamlfile)
+            recursive_merge(data, dmap)
+    data["path"] = all_paths[sys.argv[3]]
+
+    print(yaml.dump(data))
+
+def get_actions():
+    paths = get_paths()
+    actions = {}
+    for j in paths:
+        with open(j + "/info.yaml") as yamlfile:
+            dmap = yaml.safe_load(yamlfile)
+            if "actions" in dmap:
+                for i in dmap["actions"]:
+                    if not i in actions:
+                        actions[i] = dmap["actions"][i]
+    return actions
+
+def get_main_action():
+    paths = get_paths()
+    for j in paths:
+        with open(j + "/info.yaml") as yamlfile:
+            dmap = yaml.safe_load(yamlfile)
+            if "main-action" in dmap:
+                return dmap["main-action"]
+    return False
+
+def list_actions():
+    actions = get_actions()
+    if len(sys.argv) == 3:
+        for i in sorted(actions):
+            print(i)
+    else:
+        action = sys.argv[3]
+        if action in actions:
+            newpath = path.expanduser(sys.argv[1] + '/.metadata/actions/' + actions[action])
+            newpath = newpath.split(" ")
+            newpath.append(sys.argv[1])
+            proc(newpath)
+
+def new_project():
+    if len(sys.argv) == 4:
+        print("Cancel")
+    elif sys.argv[4] != "Cancel":
+        name = " ".join(sys.argv[4:]).strip().replace("|  ", "").replace("-  ", "")
+        paths = build_map(sys.argv[1])
+        if name[-1:] == ":":
+            create = True
+            name = name[:-1]
+        else:
+            create = False
+        if name == "Delete":
+            pathstr = sys.argv[3]
+            if len(listdir(pathstr)) == 1:
+                proc(['rm', '-rf', pathstr]).wait()
+        elif name in paths:
+            print("Cancel")
+        else:
+            pathstr = sys.argv[3] + "/" + name.replace(" ", "_")
+            proc(['mkdir', pathstr]).wait()
+            with open(pathstr + "/info.yaml", "w") as yamlfile:
+                dmap = {}
+                dmap["title"] = name
+                dmap["recurse"] = 1 if create else 0
+                yaml.dump(dmap, yamlfile)
+            if not create:
+                fpath = path.expanduser(sys.argv[1])
+                newpath = fpath + '/.metadata/current'
+                if path.islink(newpath):
+                    proc(['rm', newpath]).wait()
+                proc(['ln', '-s', pathstr, newpath])
+
+                string = ""
+                for i in get_paths():
+                    string += "set rtp+=" + i + "\n" + "try\n" + "\tsource " + i + "/init.vim\n" + \
+                              "catch " + "/^Vim\\%((\\a\\+)\\)\\=:E484/" + "\n" + "endtry\n"
+                with open(fpath + "/.metadata/append.vim", "w") as vimfile:
+                    vimfile.write(string)
+
+def usage():
+    print("Usage: " + sys.argv[0] + " <start path> <command> [args]\n" +
+          "Command List: \n" +
+          "  list-projects: get list of all projects\n" +
+          "  new-project: create new project in selected directory\n" +
+          "  get-actions: get list of all project actions")
+
+if __name__ == "__main__":
+    main()

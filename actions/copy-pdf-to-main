@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+X="$(yq -r .title ~/Projects/.metadata/current/info.yaml)"
+cp ~/Projects/.metadata/current/main.pdf "$HOME/$X.pdf"

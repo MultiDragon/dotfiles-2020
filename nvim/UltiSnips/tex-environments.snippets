@@ -1,0 +1,126 @@
+global !p
+def get_date():
+	from datetime import datetime
+	months = ["???", "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября",
+		"октября", "ноября", "декабря"]
+	date = datetime.now()
+	return str(date.day) + " " + months[date.month] + " " + str(date.year) + " г."
+endglobal
+
+
+global !p
+def expand(snip):
+	if snip.tabstop != 1:
+		return
+	vim.eval('feedkeys("\<C-R>=UltiSnips#ExpandSnippet()\<CR>")')
+endglobal
+
+# template<Tab> --> (document template)
+snippet template "Document template" b
+\documentclass[12pt,a4paper]{article}
+\usepackage{tpl}
+\begin{document}
+\dbegin[`!p snip.rv = get_date()`]{${1:Матфак ВШЭ}}{${2:Предмет, 1 курс}}{${3:Автор курса}}
+
+$0
+
+\end{document}
+endsnippet
+
+# enum<Tab> --> (enumerate list)
+snippet enum "Enumerate" b
+\begin{enumerate}
+	\item $0
+\end{enumerate}
+endsnippet
+
+# item<Tab> --> (itemize list)
+snippet item "Itemize" b
+\begin{itemize}
+	\item $0
+\end{itemize}
+endsnippet
+
+# it<Tab> --> new list element
+snippet it "Add item" w
+
+\item 
+endsnippet
+
+snippet hdr "Header" b
+\hdr{$1}
+
+$0
+endsnippet
+
+snippet shdr "Subheader" b
+\shdr{$1}
+
+$0
+endsnippet
+
+snippet def "Definition" b
+\definition{$1} $0
+endsnippet
+
+snippet prf "Proof" b
+\proof $0 \QEDA\\\\
+endsnippet
+
+snippet zs "Problem with Solution" b
+\z $1
+
+\s $0 \QEDA\\\\
+endsnippet
+
+snippet envi "Environment" b
+\begin{$1}
+$0
+\end{$1}
+endsnippet
+
+snippet align "Align" b
+\begin{align*}
+$0
+\end{align*}
+endsnippet
+
+post_jump "expand(snip)"
+snippet gh "Предмет списка" w
+it$1
+endsnippet
+
+post_jump "expand(snip)"
+snippet пр "Предмет списка" w
+it$1
+endsnippet
+
+snippet bbff "TextBF" wA
+\textbf{$1}`!p
+if t[2] and t[2][0] not in [',', '.', '?', '-', ' ', ')', ':']:
+    snip.rv = ' '
+else:
+    snip.rv = ''
+`$2
+endsnippet
+snippet itff "TextIT" wA
+\textit{$1}`!p
+if t[2] and t[2][0] not in [',', '.', '?', '-', ' ', ')', ':']:
+    snip.rv = ' '
+else:
+    snip.rv = ''
+`$2
+endsnippet
+
+post_jump "expand(snip)"
+snippet жж "Жирный" wA
+bbff$1
+endsnippet
+
+snippet tikzimg "TikZ" b
+\begin{tikzpicture}
+	\qsetscale{${1:0.5}}
+	\qgrid{${2:10}}{${3:10}}
+	$0
+\end{tikzpicture}
+endsnippet

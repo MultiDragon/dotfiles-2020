@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+killall rofi
+rofi -modi "Projects:~/.custom/bin/projecteer $1 list-projects" -show Projects

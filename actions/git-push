@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+killall rofi
+cd "$2"
+urxvt -e bash -c "cd '$2' && git add \$(git ls-files) && git commit && git push $1 master"

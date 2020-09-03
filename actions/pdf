@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+qpdfview ~/Projects/.metadata/current/main.pdf & disown & exit 0 & killall rofi

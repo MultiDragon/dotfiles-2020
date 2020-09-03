@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+INKS=Inkscape
+EDIT=$(i3-msg -t get_workspaces | jq -r '.[] | select(.focused == true) | .name')
+
+text="$@"
+name="${text// /-}"
+name="${name,,}"
+
+if [ ! -d Figures ]; then
+	mkdir Figures
+fi
+cd Figures
+
+if [ ! -f $name.pdf_tex ]; then
+	cp ~/Projects/Tex/Template.svg "$name.svg"
+fi
+i3-msg workspace $INKS > /dev/null
+inkscape "$name.svg" >/dev/null 2>/dev/null
+# inkscape -zD --file="$name.svg" --export-pdf="$name.pdf" --export-latex
+inkscape --batch-process --actions="export-filename:$name.pdf;export-latex;export-do" "$name.svg" >/dev/null 2>/dev/null
+i3-msg workspace $EDIT > /dev/null
+
+echo \\inkscapeinclude{$name}{$text}
+
+cd ..

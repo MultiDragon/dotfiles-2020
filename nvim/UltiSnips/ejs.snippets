@@ -1,0 +1,50 @@
+snippet modal "Modal" b
+<button data-toggle="modal" data-target="#modal-$1" class="btn btn-${6:info}">
+	${2:Текст кнопки}
+</button>
+
+<div class="modal fade" id="modal-$1" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">${3:Modal Title}</h5>
+				<button type="button" class="close" data-dismiss="modal">
+					<span>&times;</span>
+				</button>
+			</div>
+			<form id="form-$1">
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="name-$1">$7</label>
+						<input type="text" class="form-control" id="name-$1" placeholder="$8" />
+						$0
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="reset" class="btn btn-secondary" data-dismiss="modal">
+						${4:Закрыть}
+					</button>
+					<button type="submit" class="btn btn-primary">
+						${5:Отправить}
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	$(() => {
+		$("#form-$1").on("submit", e => {
+			e.preventDefault();
+			let data = { name : $("#name-$1").val() };
+			socket.emit("$1", data);
+		});
+		socket.on("$1", data => {});
+	});
+</script>
+endsnippet
+
+snippet lblin "Label Input" b
+<label for="$1-$2">$3</label>
+<input type="${5:text}" class="form-control" id="$1-$2" placeholder="$4" />
+endsnippet

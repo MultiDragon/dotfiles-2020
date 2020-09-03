@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+cd ~/Projects/.metadata/current/lib/
+urxvt -e bash -c "./compile.sh"

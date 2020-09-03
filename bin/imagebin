@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+photoflare $1
+xclip -sel clip -target image/png < $1
+curl -F file="@$1" "https://imagebin.ca/upload.php" | grep url | awk -F "url:" '{print $2}\' > ~/.custom/data/polybar-status
+rm $1

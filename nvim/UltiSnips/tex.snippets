@@ -1,0 +1,32 @@
+extends tex-math-commands,tex-modals,tex-environments
+
+
+snippet ... "LDots" iA
+\ldots 
+endsnippet
+
+priority 1000
+snippet '^.*"' "Auto quotes" irA
+`!p
+stripped = match.string[:-1]
+opening = 1
+i = len(stripped) - 2
+while i >= 0:
+	if stripped[i] == '>' and stripped[i + 1] == '>':
+		break
+	if stripped[i] == '<' and stripped[i + 1] == '<':
+		opening = 0
+		break
+	i -= 1
+snip.rv = stripped
+if opening:
+	snip.rv += "<<"
+else:
+	snip.rv += ">>"
+`
+endsnippet
+
+
+snippet qqq "QED" iA
+\QEDA\\\\
+endsnippet

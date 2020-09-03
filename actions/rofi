@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+killall rofi
+rofi -modi "$1:~/Projects/.metadata/actions/$2" -show $1

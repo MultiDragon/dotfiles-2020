@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+photoqt $2/$1 & disown & exit 0 & killall rofi

@@ -1,0 +1,211 @@
+[colors]
+alert = #f00
+background = #DD000000
+foreground = #dfdfdf
+keyboard = #ff0
+keyboard_extra = #f60
+wm = #f3c
+wm_background = #444
+project = #0f0
+time = #00f
+battery = #fc0
+battery_charging = #0c6
+battery_full = #3c3
+internet = #66f
+internet2 = #f00
+audio = #F33
+mute = #A00
+address = #c3f
+mpd = #c3f
+mpd2 = #90c
+backlight = #66c
+polystatus = #ff33ff
+
+[barparams]
+height = 20
+line-size = 2
+font-0 = Noto Sans Mono:pixelsize=10;1
+font-1 = siji:pixelsize=10;1
+cursor-click = pointer
+cursor-scroll = ns-resize
+width = 100%
+background = ${colors.background}
+foreground = ${colors.foreground}
+fixed-center = true
+
+[bar/wizzerinus2]
+inherit = barparams
+bottom = true
+modules-left = i3new
+modules-center = hseserver
+modules-right = address internet
+
+[bar/wizzerinus]
+inherit = barparams
+modules-left = mpd
+modules-center = project
+modules-right = backlight keyboard pulse date battery
+
+[module/backlight]
+type = internal/backlight
+card = intel_backlight
+scroll-up = light -A 5
+scroll-down = light -U 5
+format-margin = 1
+format-prefix = "XBL "
+format-prefix-foreground = ${colors.backlight}
+format-underline = ${colors.backlight}
+
+[module/i3new]
+type = custom/script
+interval = 0.5
+exec = ~/.custom/bin/i3winbar
+
+[module/hseserver]
+type = custom/script
+tail = true
+exec = ~/.custom/bin/hseserver
+
+[module/i3]
+type = internal/i3
+format = <label-state> <label-mode>
+index-sort = true
+wrapping-scroll = false
+
+label-mode-foreground = #000
+label-mode-background = ${colors.wm_background}
+label-mode-padding = 1
+
+label-focused = %name%
+label-focused-background = ${colors.wm_background}
+label-focused-underline = ${colors.wm}
+label-focused-padding = 1
+
+label-unfocused = %name%
+label-unfocused-padding = 1
+
+label-urgent = %name%
+label-urgent-background = ${colors.alert}
+label-urgent-padding = 1
+
+[module/mpd]
+type = internal/mpd
+format-online = <label-song> <icon-prev><toggle><icon-next>
+
+icon-prev = 
+icon-stop = 
+icon-play = 
+icon-pause = 
+icon-next = 
+format-online-prefix = "MPD "
+format-online-prefix-foreground = ${colors.mpd}
+format-online-underline = ${colors.mpd}
+format-offline-prefix = "MPD Offline"
+format-offline-prefix-foreground = ${colors.mpd2}
+format-offline-underline = ${colors.mpd2}
+
+[module/project]
+type = custom/script
+interval = 2.0
+exec = "yq -Mr .title ~/Projects/.metadata/current/info.yaml"
+format-prefix = "PROJ "
+format-prefix-foreground = ${colors.project}
+format-underline = ${colors.project}
+click-left = rofi -modi 'ProjectActions:~/.custom/bin/projecteer /home/wizzerinus/Projects list-actions' -show ProjectActions
+
+[module/polybarstatus]
+type = custom/script
+interval = 4.0
+exec = "cat ~/.custom/data/polybar-status 2>/dev/null"
+format-underline = ${colors.polystatus}
+click-left = cat ~/.custom/data/polybar-status | xsel -bi && rm ~/.custom/data/polybar-status
+
+[module/internet]
+type = internal/network
+interface = wlp4s0
+interval = 3.0
+format-connected-prefix = "NET "
+format-connected-prefix-foreground = ${colors.internet}
+format-connected-underline = ${colors.internet}
+format-disconnected-prefix = "NET "
+format-disconnected-prefix-foreground = ${colors.internet2}
+format-disconnected-underline = ${colors.internet2}
+;format-connected-margin = 1
+;format-disconnected-margin = 1
+label-connected = %{A1:networkmanager_dmenu:}%essid:0:10:...%, %downspeed%%{A}
+label-disconnected = %{A1:networkmanager_dmenu:}No connection%{A}
+
+[module/address]
+type = custom/script
+interval = 20.0
+exec = "X=$(ifconfig | grep -A 1 wlp4s0 | grep inet | awk '{print $2}\'); [ -z $X ] && echo None || echo $X"
+format-prefix = "ADDR "
+format-prefix-foreground = ${colors.address}
+format-underline = ${colors.address}
+format-margin = 1
+
+[module/keyboard]
+type = internal/xkeyboard
+blacklist-0 = scroll lock
+
+format-prefix = "KBD "
+format-prefix-foreground = ${colors.keyboard}
+format-prefix-underline = ${colors.keyboard}
+
+label-layout = %layout%
+label-layout-underline = #ff0
+
+label-indicator-on-capslock-padding = 1
+label-indicator-on-capslock = C
+label-indicator-on-capslock-underline = ${colors.keyboard_extra}
+label-indicator-on-numlock-padding = 1
+label-indicator-on-numlock = N
+label-indicator-on-numlock-underline = ${colors.keyboard_extra}
+# label-indicator-underline = ${colors.keyboard_extra}
+
+[module/pulse]
+type = internal/pulseaudio
+use-ui-max = false
+
+format-volume-prefix = "AUD "
+format-volume-prefix-foreground = ${colors.audio}
+format-volume-underline = ${colors.audio}
+format-muted-prefix = "MUTE "
+format-muted-prefix-foreground = ${colors.mute}
+format-muted-underline = ${colors.mute}
+
+[module/date]
+type = internal/date
+interval = 1
+
+date =
+date-alt = " %Y-%m-%d"
+
+time = %H:%M
+time-alt = %H:%M:%S
+
+format-prefix = "TIME "
+format-prefix-foreground = ${colors.time}
+format-underline = ${colors.time}
+format-margin = 1
+label = %date% %time%
+
+[module/battery]
+type = internal/battery
+full-at = 95
+battery = BAT0
+adapter = AC0
+interval = 20.0
+poll-interval = 10
+time-format = %H:%M
+
+format-charging-prefix = "CHR "
+format-charging-prefix-foreground = ${colors.battery_charging}
+format-charging-underline = ${colors.battery_charging}
+format-discharging-prefix = "BAT "
+label-discharging = %percentage%% - %time%
+format-discharging-prefix-foreground = ${colors.battery}
+format-discharging-underline = ${colors.battery}
+format-full = "FULL"
+format-full-prefix-foreground = ${colors.battery_full}
+format-full-underline = ${colors.battery_full}

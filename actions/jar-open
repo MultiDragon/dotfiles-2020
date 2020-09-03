@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+java -jar ~/Projects/.metadata/current/lib/$(yq -Mr '.["java-file-name"]' ~/Projects/.metadata/current/info.yaml).jar & disown & killall rofi

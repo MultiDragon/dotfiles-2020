@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+import sys
+from subprocess import Popen as proc
+from os import path
+
+URL = path.expanduser("~/.custom/data/internet-manager-list")
+
+def run_browser(url):
+    proc(["firefox", url])
+
+def main():
+    if len(sys.argv) == 1:
+        with open(URL) as file:
+            print("".join(file.readlines()))
+            return
+
+    if sys.argv[1][0:3] == "http":
+        url = sys.argv[1]
+    else:
+        params = sys.argv[1].split(" ")
+        oper = getOperation(params[0])
+        if not oper:
+            url = getOperation("google")(sys.argv[1])
+        else:
+            url = oper(" ".join(params[1:]))
+
+    with open(URL, "r+") as file:
+        lines = file.readlines()
+        if not sys.argv[1] in lines:
+            file.write(sys.argv[1])
+            file.write("\n")
+
+    run_browser(url)
+
+def getOperation(name):
+    spaceToPlus = lambda x: x.replace(" ", "+")
+    if name == "google":
+        return lambda x: "https://google.com/search?q=%s" % spaceToPlus(x)
+    if name == "yandex":
+        return lambda x: "https://yandex.ru/search?q=%s" % spaceToPlus(x)
+    if name == "kahoot":
+        return lambda x: "https://kahoot.it/challenge/%s" % x
+    return False
+
+if __name__ == "__main__":
+    main()

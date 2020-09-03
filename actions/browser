@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+if [ -z $2 ]; then
+	firefox & disown & exit 0 & killall rofi
+else
+	firefox ~/Projects/.metadata/current/$1 & disown & exit 0 & killall rofi
+fi

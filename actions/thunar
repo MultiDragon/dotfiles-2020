@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+thunar ~/Projects/.metadata/current & disown & exit 0 & killall rofi

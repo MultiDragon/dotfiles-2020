@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+cd ~/Projects/.metadata/current
+kitty --session="$HOME/Projects/.metadata/kitty-layouts/$1" --detach

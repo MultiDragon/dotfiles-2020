@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+cd ~/Projects/.metadata/current
+kitty --detach nvim info.yaml

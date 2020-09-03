@@ -1,0 +1,188 @@
+global !p
+texMathZones = ['texMathZone'+x for x in ['A', 'AS', 'B', 'BS', 'C',
+'CS', 'D', 'DS', 'E', 'ES', 'F', 'FS', 'G', 'GS', 'H', 'HS', 'I', 'IS',
+'J', 'JS', 'K', 'KS', 'L', 'M', 'MS', 'S', 'V', 'W', 'X', 'Y', 'Z']]
+
+texIgnoreMathZones = ['texMathText']
+
+texMathZoneIds = vim.eval('map('+str(texMathZones)+", 'hlID(v:val)')")
+texIgnoreMathZoneIds = vim.eval('map('+str(texIgnoreMathZones)+", 'hlID(v:val)')")
+
+ignore = texIgnoreMathZoneIds[0]
+
+def math():
+	synstackids = vim.eval("synstack(line('.'), col('.') - (col('.')>=2 ? 1 : 0))")
+	try:
+		first = next(
+	    i for i in reversed(synstackids)
+	    if i in texIgnoreMathZoneIds or i in texMathZoneIds
+	)
+		return first != ignore
+	except StopIteration:
+		return False
+
+def nmath():
+	return not math()
+endglobal
+
+# $ -> $...$
+# snippet $ "inline math" Aw
+# $${1}$`!p
+# if t[2] and t[2][0] not in [',', '.', '?', '-', ' ', ')', ':']:
+#    snip.rv = ' '
+# else:
+#    snip.rv = ''
+# `$2
+# endsnippet
+
+snippet #$ "inline math" Aw
+$${VISUAL}$
+endsnippet
+
+# \[ -> \[...\]
+context "nmath()"
+snippet \[ "display math" Aw
+\[
+$1
+.\] $0
+endsnippet
+
+context "math()"
+snippet qq "square" Ai
+^2
+endsnippet
+context "math()"
+snippet cc "cube" Ai
+^3
+endsnippet
+context "math()"
+snippet iu "superscript" Ai
+^{$1}$0
+endsnippet
+context "math()"
+snippet ivn "Inverse" Ai
+^{-1}
+endsnippet
+
+context "math()"
+snippet _' "Conjugation" Ai
+\overline{$1}$0
+endsnippet
+
+# a2 -> a_2
+context "math()"
+snippet '([^a-z][A-Za-z])(\d)' "auto subscript" Awr
+`!p snip.rv = match.group(1)`_`!p snip.rv = match.group(2)`
+endsnippet
+
+# a_21 -> a_{21}
+context "math()"
+snippet '([A-Za-z])_(\d\d)' "auto subscript2" Awr
+`!p snip.rv = match.group(1)`_{`!p snip.rv = match.group(2)`}
+endsnippet
+
+# abc/ -> \frac{abc}{}
+context "math()"
+snippet '((\d+)|(\d*)(\\)?([A-Za-z']+)((\^|_)(\{\d+\}|\d))*)/' "Fraction" Awr
+\\frac{`!p snip.rv = match.group(1)`}{$1}$0
+endsnippet
+
+# (a+bc)/ -> \frac{a+bc}{}
+priority 1000
+context "math()"
+snippet '^.*\)/' "() Fraction" Awr
+`!p
+stripped = match.string[:-1]
+depth = 0
+i = len(stripped) - 1
+while True:
+	if stripped[i] == ')': depth += 1
+	if stripped[i] == '(': depth -= 1
+	if depth == 0: break;
+	i -= 1
+snip.rv = stripped[0:i] + "\\frac{" + stripped[i+1:-1] + "}"
+`{$1}$0
+endsnippet
+
+# --> -> \to
+context "math()"
+snippet --> "to" iA
+\to
+endsnippet
+
+# |-> -> \mapsto
+context "math()"
+snippet |-> "mapsto" iA
+\mapsto
+endsnippet
+
+# ~~ -> \sim
+context "math()"
+snippet ~~ "Similar" iA
+\sim 
+endsnippet
+
+# ** -> \cdot
+context "math()"
+snippet ** "CDot" iA
+\cdot 
+endsnippet
+
+# xx -> \cross
+context "math()"
+snippet xx "Cross" iA
+\times 
+endsnippet
+
+# ==> -> \implies
+context "math()"
+snippet ==> "Implies" iA
+\implies 
+endsnippet
+
+# <=> -> \iff
+context "math()"
+snippet <=> "Double Implies" iA
+\iff 
+endsnippet
+
+# <== -> \impliedby
+context "math()"
+snippet <== "Implied by" iA
+\impliedby 
+endsnippet
+
+# NN -> \mathbb N and same for Z,Q,R,C
+context "math()"
+snippet NN "Natural Numbers" iA
+\mathbb N
+endsnippet
+context "math()"
+snippet ZZ "Integers" iA
+\mathbb Z
+endsnippet
+context "math()"
+snippet QQ "Rationals" iA
+\mathbb Q
+endsnippet
+context "math()"
+snippet RR "Reals" iA
+\mathbb R
+endsnippet
+context "math()"
+snippet CC "Complex" iA
+\mathbb C
+endsnippet
+context "math()"
+snippet <<< "Left Angle" iA
+\langle 
+endsnippet
+context "math()"
+snippet >>> "Right Angle" iA
+\rangle
+endsnippet
+
+context "math()"
+snippet Ee "Epsilon" iA
+\varepsilon
+endsnippet

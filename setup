@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+echo "======================================"
+echo "== MultiDragon's DotFiles Installer =="
+echo "======================================"
+echo ""
+
+echo "Install dependencies? (requires ArchLinux and Trizen) (Y/n) "
+read -n1 ans
+if [ $ans == n ]; then
+	echo "Skipped dependency installation"
+else
+	echo "Installing dependencies..."
+	trizen -S --needed python i3-gaps inkscape kitty mpd polybar rofi yq git qpdfview \
+		texlive-bin texlive-core texlive-langcyrillic texlive-latexextra \
+		urxvt i3lock-fancy feh setxkbmap powertop scrot photoflare \
+		neovim neovim-remote python-pynvim
+fi
+
+echo ""
+echo "Symlinking directories..."
+cd ~/.config
+
+files=( "i3" "inkscape-shortcut-manager" "kitty" "nvim" "polybar" "rofi" )
+for i in "${files[@]}"; do
+	if [ -f $i ]; then
+		mv $i $i.old
+	fi
+	ln -s ~/.custom/$i .
+done
+
+mkdir -p inkscape
+cd inkscape
+if [ -f extensions ]; then
+	mv extensions extensions.old
+fi
+ln -s ~/.custom/inkscape/extensions .
+
+cd ~
+mkdir -p texmf/tex/latex
+ln -s ~/.custom/latex/* texmf/tex/latex
+
+mkdir -p Projects/.metadata
+cd Projects/.metadata
+ln -s ~/.custom/actions .
+ln -s ~/.custom/kitty-layouts .
+
+echo "Install nvim-dein? (Y/n) "
+read -n1 ans
+if [ $ans == n ]; then
+	echo "Skipped nvim-dein"
+else
+	echo "Installing nvim-dein..."
+	cd ~
+	curl https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh > dein-installer.sh
+	sh ./dein-installer.sh ~/.config/nvim-dein
+	rm dein-installer.sh
+fi
+
+echo "======================================"
+echo "== MultiDragon's DotFiles Installer =="
+echo "======================================"
+echo ""
+echo "Installation complete. Press any key to exit the installer."
+read -n1 ans

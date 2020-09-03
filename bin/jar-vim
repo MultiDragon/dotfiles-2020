@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+JAR=Jar-Test
+EDIT=$(i3-msg -t get_workspaces | jq -r '.[] | select(.focused == true) | .name')
+
+i3-msg workspace $JAR > /dev/null
+java -jar ~/Projects/.metadata/current/lib/$(yq -Mr '.["java-file-name"]' ~/Projects/.metadata/current/info.yaml).jar
+i3-msg workspace $EDIT > /dev/null

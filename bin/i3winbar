@@ -1,0 +1,65 @@
+#!/usr/bin/env python
+
+import re
+import i3ipc
+
+rename_map = {
+    "firefox": "Firefox",
+    "kitty": "Kitty",
+    "org.remmina.Remmina": "Remmina RDP",
+    "discord": "Discord",
+    "TelegramDesktop": "Telegram",
+    "zoom": "Zoom",
+    "qpdfview": "PDF",
+    "libreoffice-impress": "Impress",
+    "libreoffice-writer": "Writer",
+    "libreoffice-calc": "Calc",
+    "Google-chrome": "Google Chrome"
+}
+
+convert = lambda text: int(text) if text.isdigit() else text.lower()
+alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+
+def get(cls):
+    if cls in rename_map:
+        return rename_map[cls]
+    return cls
+
+def main(color_background, color_background_urgent, color_underline, color_underline_default, color_app_underline):
+    i3 = i3ipc.Connection()
+
+    workspaces = {}
+    for con in i3.get_tree():
+        if con.window and con.parent.type != "dockarea":
+            name = con.workspace().name
+            if not con.window_class:
+                continue
+            if not name in workspaces:
+                workspaces[name] = []
+            if con.urgent:
+                workspaces[name].append("!")
+            workspaces[name].append(get(con.window_class))
+    focused = i3.get_tree().find_focused().workspace().name
+    if not focused in workspaces:
+        workspaces[focused] = []
+    # items = list(workspaces.items())
+    oitems = sorted(workspaces.keys(), key=alphanum_key)
+
+    output = "%{A4:i3-msg workspace prev_on_output:}%{A5:i3-msg workspace next_on_output:}"
+    for j in oitems:
+        i = [j, workspaces[j]]
+        output += "%{{A1:i3-msg workspace {}:}}".format(i[0])
+        if focused == i[0] or (len(i[1]) > 0 and i[1][0] == "!"):
+            output += "%{{B{}}}".format(len(i[1]) > 0 and i[1][0] == "!" and color_background_urgent or color_background)
+        output += "%{{u{}}}%{{+u}} {} %{{-u}}".format(focused == i[0] and color_underline or color_underline_default, i[0])
+
+        for k in i[1]:
+            if k != "!":
+                output += " %{{u{}}}%{{+u}}{}%{{-u}}".format(color_app_underline, k)
+        output += "%{B-}"
+        output += "%{A} "
+    output += "%{A}%{A}"
+    print(output)
+
+if __name__ == "__main__":
+    main("#222", "#f00", "#f3c", "#900", "#00f")

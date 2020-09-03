@@ -1,0 +1,40 @@
+snippet template "Template" b
+#include <iostream>
+using namespace std;
+
+int main() {
+	cout << "Hello world!" << endl;
+	
+	return 0;
+}
+endsnippet
+
+snippet classtpl "Class Template" b
+#include <iostream>
+using namespace std;
+
+class $1 {
+public:
+	$1();
+	friend ostream& operator<<(ostream&, const $1);
+};
+
+$1::$1() {
+	$2
+}
+
+ostream& operator<<(ostream& input, $1 x) {
+	$3
+	return input;
+}
+
+int main() {
+	$0
+
+	return 0;
+}
+endsnippet
+
+snippet tttt "Template" bA
+template<typename T> 
+endsnippet

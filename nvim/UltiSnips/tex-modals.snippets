@@ -1,0 +1,44 @@
+global !p
+def create_tabstops(snip):
+	lines = int(snip.buffer[snip.line])
+	stri = ""
+	for i in range(lines):
+		stri += snip.buffer[snip.line - lines + i] + "\n"
+	snip.buffer[snip.line - lines - 1 : snip.line + 1] = []
+	snip.expand_anon("\n" + stri)
+endglobal
+
+snippet sage "SageMath" w
+!$1!$2!sageprc!$0
+endsnippet
+
+snippet "!(.*)!(.*)!sageprc!" "SageMath Proc" wr
+`!p
+import subprocess
+code = match.group(1) + 'print(latex(' + match.group(2) + '))'
+snip.rv = subprocess.check_output(['sage', '-c', code])
+`
+endsnippet
+
+snippet minipages "MiniPages" b
+$1!gmp!$0
+endsnippet
+
+post_jump "create_tabstops(snip)"
+snippet "[1-4]!gmp!" "MiniPages Proc" wr
+\begin{figure}[!htb]
+`!p
+copies = int(match.string[0])
+scale = 0.96 / copies
+snip.rv = ""
+for i in range(copies):
+	snip.rv += "\t\\begin{minipage}{" + str(scale) + "\\textwidth}\\centering\n\t\t$" + str(i + 1) + "\n\t\\end{minipage}"
+	if i != copies - 1:
+		snip.rv += "\n"
+`
+\end{figure}
+`!p
+snip.rv += str(copies * 3 + 2)
+`
+endsnippet
+
