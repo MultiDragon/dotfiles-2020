@@ -56,10 +56,6 @@ snippet cc "cube" Ai
 ^3
 endsnippet
 context "math()"
-snippet iu "superscript" Ai
-^{$1}$0
-endsnippet
-context "math()"
 snippet ivn "Inverse" Ai
 ^{-1}
 endsnippet
@@ -189,4 +185,37 @@ endsnippet
 context "math()"
 snippet Ee "Epsilon" iA
 \varepsilon
+endsnippet
+
+context "math()"
+snippet " fa" "For All" iA
+\forall 
+endsnippet
+context "math()"
+snippet " ex" "Exists" iA
+\exists 
+endsnippet
+
+context "math()"
+snippet (() "Parens" iA
+\lrp{$1} $0
+endsnippet
+context "math()"
+snippet [[] "Brackets" iA
+\lrb{$1} $0
+endsnippet
+
+context "math()"
+snippet 22ab "Conjugation" iA
+!$1!$2!22ab!$0
+endsnippet
+
+context "math()"
+snippet "!(.*)!(.*)!22ab!" "Conj proc" ir
+`!p
+a = match.group(1)
+b = match.group(2)
+sq = a + "^2+" + b + "^2"
+snip.rv = "\lrp{\\frac{" + a + "}{" + sq + "} - \\frac{" + b + "}{" + sq + "}i}"
+`
 endsnippet

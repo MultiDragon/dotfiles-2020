@@ -12,9 +12,17 @@ if [ $ans == n ]; then
 else
 	echo "Installing dependencies..."
 	trizen -S --needed python i3-gaps inkscape kitty mpd polybar rofi yq git qpdfview \
-		texlive-bin texlive-core texlive-langcyrillic texlive-latexextra \
 		urxvt i3lock-fancy feh setxkbmap powertop scrot photoflare \
 		neovim neovim-remote python-pynvim
+fi
+
+echo "Install LaTeX? (Y/n) "
+read -n1 ans
+if [ $ans == n ]; then
+	echo "Skipped LaTeX installation"
+else
+	echo "Installing LaTeX..."
+	trizen -S --needed texlive-bin texlive-core texlive-langcyrillic texlive-latexextra
 fi
 
 echo ""
