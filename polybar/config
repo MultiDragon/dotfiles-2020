@@ -37,12 +37,12 @@ fixed-center = true
 inherit = barparams
 bottom = true
 modules-left = i3new
-modules-center = hseserver
-modules-right = address internet
+modules-center =
+modules-right = hseserver
 
 [bar/wizzerinus]
 inherit = barparams
-modules-left = mpd
+modules-left = mpd internet
 modules-center = project
 modules-right = backlight keyboard pulse date battery
 
@@ -130,8 +130,8 @@ format-connected-underline = ${colors.internet}
 format-disconnected-prefix = "NET "
 format-disconnected-prefix-foreground = ${colors.internet2}
 format-disconnected-underline = ${colors.internet2}
-;format-connected-margin = 1
-;format-disconnected-margin = 1
+format-connected-margin = 1
+format-disconnected-margin = 1
 label-connected = %{A1:networkmanager_dmenu:}%essid:0:10:...%, %downspeed%%{A}
 label-disconnected = %{A1:networkmanager_dmenu:}No connection%{A}
 
