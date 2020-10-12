@@ -7,6 +7,7 @@ from os import path
 URL = path.expanduser("~/.custom/data/internet-manager-list")
 
 def run_browser(url):
+    proc(["killall", "rofi"]).wait()
     proc(["firefox", url])
 
 def main():
@@ -15,7 +16,7 @@ def main():
             print("".join(file.readlines()))
             return
 
-    if sys.argv[1][0:3] == "http":
+    if sys.argv[1][0:4] == "http" or sys.argv[1][0:3] == "www":
         url = sys.argv[1]
     else:
         params = sys.argv[1].split(" ")
@@ -27,7 +28,7 @@ def main():
 
     with open(URL, "r+") as file:
         lines = file.readlines()
-        if not sys.argv[1] in lines:
+        if sys.argv[1] + "\n" not in lines:
             file.write(sys.argv[1])
             file.write("\n")
 
